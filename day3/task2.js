@@ -1,6 +1,5 @@
 var fs = require("fs");
 var text = fs.readFileSync("./input1.txt", "utf-8");
-// var text = "...123....12....*43424......";
 
 const lines = text.split("\n");
 // text = text.replace(/\s/g,'');
@@ -27,13 +26,17 @@ for (let i = 0; i < lines.length; i++) {
     const prevLine = lines[i - 1].trim() || "";
     const followLine = lines[i + 1].trim() || "";
 
-    if (numberRegex.test(prevLine.charAt(match.index))) {
+    if (/\d/.test(prevLine.charAt(match.index))) {
       prevRowMatches = getNumbersFromLine(prevLine, match.index);
-    } else prevRowMatches = getAdjacentNumbers(prevLine, match.index);
+    } else {
+      prevRowMatches = getAdjacentNumbers(prevLine, match.index);
+    }
 
-    if (numberRegex.test(followLine.charAt(match.index))) {
+    if (/\d/.test(followLine.charAt(match.index))) {
       followRowMatches = getNumbersFromLine(followLine, match.index);
-    } else followRowMatches = getAdjacentNumbers(followLine, match.index);
+    } else {
+      followRowMatches = getAdjacentNumbers(followLine, match.index);
+    }
 
     resultArray = thisRowMatches
       .filter(Boolean)
@@ -61,19 +64,19 @@ function getAdjacentNumbers(row, index) {
 }
 
 function getNumbersFromLine(line, index) {
-  const lineArray = line.split(/\D/g);
+//   console.log(line);
+//   console.log(index);
+  const lineArray = line.split(/(\d+)/g);
+  //   console.log(lineArray);
   let posEnd = 0;
   const newArr = lineArray.map((el) => {
-    posEnd += el.length === 0 ? 1 : el.length;
+    posEnd += el.length;
     const newEl = { el, posEnd: posEnd };
     return newEl;
   });
 
   const match = newArr.find((el) => el.posEnd > index);
-  console.log(line);
-  console.log(index);
-  console.log(match);
-  //   console.log(match.el);
+//   console.log(match.el);
   return [match?.el ?? undefined];
 }
 
