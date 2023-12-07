@@ -32,21 +32,46 @@ for (let i = 0; i < lines.length; i++) {
   const hand = lines[i].split(" ")[0];
   const bid = lines[i].split(" ")[1];
 
-  const count = countCharacters(hand);
-  // console.log(count);
+  const pair = /([a-z0-9])(.*(\1|j)){1}|(j)([a-z0-9]|j)(.*(\5|j)){0}/gi;
+  const triple = /([a-z0-9])(.*(\1|j)){2}|(J)([a-z0-9])(.*(\5|j)){1}|(JJ)([a-z0-9])(.*(\9|j)){0}/gi;
+  const quad = /([a-z0-9])(.*(\1|j)){3}|(J)([a-z0-9])(.*(\5|j)){2}|(JJ)([a-z0-9])(.*(\9|j)){1}|(JJJ)([a-z0-9])(.*(\13|j)){0}/gi;
+  const quint = /([a-z0-9])(.*(\1|j)){4}|(J)([a-z0-9])(.*(\5|j)){3}|(JJ)([a-z0-9])(.*(\9|j)){2}|(JJJ)([a-z0-9])(.*(\13|j)){1}|(JJJJ)([a-z0-9])(.*(\17|j)){0}/gi;
 
-  if (count[0] === 5) {
+  if (quint.test(hand)) {
+    // console.log("quint: ", hand);
     fiveOfAKind.push({ hand, bid });
-  } else if (count[0] === 4) {
+  } else if (quad.test(hand)) {
+    // console.log('quad: ',hand)
     fourOfAKind.push({ hand, bid });
-  } else if (count[0] === 3 && count[1] === 2) {
-    fullHouse.push({ hand, bid });
-  } else if (count[0] === 3) {
-    threeOfAKind.push({ hand, bid });
-  } else if (count[0] === 2 && count[1] === 2) {
-    doublePair.push({ hand, bid });
-  } else if (count[0] === 2) {
-    twoOfAKind.push({ hand, bid });
+  } else if (triple.test(hand)) {
+    // console.log('triple: ', hand)
+    const regex = new RegExp(hand.match(triple)[0].at(0), "g");
+    // console.log(hand.match(triple), hand.replace(regex, '') );
+
+    //fullhouse?
+    if (
+      hand.match(pair).length > 1 ||
+      hand.replace(regex, "").replace(/J/g, '').match(pair)?.length > 0
+    ) {
+      fullHouse.push({ hand, bid });
+    } else {
+      threeOfAKind.push({ hand, bid });
+    }
+  } else if (pair.test(hand)) {
+    //doublePair?
+    
+    const regex = new RegExp(hand.match(pair)[0].at(0), "g");
+    // console.log(hand.match(pair), hand.replace(hand.match(pair)[0], hand.match(pair)[0].substring(1)).match(pair)?.length);
+    if (
+      hand.match(pair).length > 1 ||
+      hand
+        .replace(regex, '').replace(/J/g, '')
+        .match(pair)?.length > 0
+    ) {
+      doublePair.push({ hand, bid });
+    } else {
+      twoOfAKind.push({ hand, bid });
+    }
   } else {
     highCard.push({ hand, bid });
   }
@@ -70,27 +95,27 @@ combinedHands = [
   ...highCard,
 ];
 
-console.log(combinedHands.length);
+console.log(combinedHands.length)
 // console.log(combinedHands)
 
-console.log("five: ", fiveOfAKind);
+// console.log("five: ", fiveOfAKind);
 // console.log("four: ", fourOfAKind);
 // console.log("fullhouse: ", fullHouse);
 // console.log("three: ", threeOfAKind);
 // console.log("2pair: ", doublePair);
 // console.log("two: ", twoOfAKind);
-// console.log("high: ", highCard);
+// console.log("high: ", highCard.splice(-10));
 
 for (let i = 0; i < combinedHands.length; i++) {
   const bid = parseInt(combinedHands[i].bid);
   const rank = parseInt(combinedHands.length - i);
   result += bid * rank;
-  //   if (rank === 1000) {
-  //       console.log(combinedHands[i]);
-  //       console.log(rank);
-  //       console.log(bid*rank);
-  //       console.log(result);
-  //     }
+//   if (rank === 1000) {
+//       console.log(combinedHands[i]);
+//       console.log(rank);
+//       console.log(bid*rank);
+//       console.log(result);
+//     }
 }
 
 console.log(result);
@@ -113,28 +138,4 @@ function sortFunc(valA, valB) {
 function findFirstDiffPos(a, b) {
   if (a.length < b.length) [a, b] = [b, a];
   return [...a].findIndex((chr, i) => chr !== b[i]);
-}
-
-function countCharacters(str) {
-  // Create an empty object to store character counts
-  const charCount = {};
-
-  // Loop through each character in the string
-  for (let char of str) {
-    // Increment the count for the current character
-    charCount[char] = (charCount[char] || 0) + 1;
-  }
-  // console.log(charCount);
-  jokers = charCount["J"];
-  charCount["J"] = 0;
-  // console.log(jokers);
-  // console.log(charCount);
-
-  let newValues = Object.values(charCount).sort((a, b) => b - a);
-  if (jokers) {
-    newValues[0] = newValues[0] + jokers;
-  }
-  // console.log(newValues);
-
-  return newValues.slice(0, 2);
 }
