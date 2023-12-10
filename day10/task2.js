@@ -90,7 +90,7 @@ while (
   steps++;
 }
 // console.log(loop);
-console.log(steps);
+console.log('part 1', steps/2);
 
 var elementsInsideLoop = 0;
 
@@ -126,19 +126,18 @@ for (let y = 0; y < grid.length; y++) {
           (pipe) => pipe[2] === '|' || pipe[2] === '7' || pipe[2] === 'F'
         ).length;
       //   console.log({ west, east, north, south });
+
       if (
-        west % 2 === 0 ||
-        east % 2 === 0 ||
-        north % 2 === 0 ||
-        south % 2 === 0
+        (west % 2 !== 0 && east % 2 !== 0) ||
+        (north % 2 !== 0 && south % 2 !== 0)
       ) {
-        // console.log(element, 'is outside the loop');
-      } else {
         // console.log(element, 'is inside the loop');
         elementsInsideLoop++;
+      } else {
+        // console.log(element, 'is outside the loop');
       }
     }
   }
 }
 
-console.log(elementsInsideLoop);
+console.log('part 2', elementsInsideLoop);
