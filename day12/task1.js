@@ -1,4 +1,3 @@
-const { count } = require('console');
 var fs = require('fs');
 var text = fs.readFileSync('./input1.txt', 'utf-8');
 
