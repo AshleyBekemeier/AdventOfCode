@@ -1,10 +1,9 @@
 var fs = require('fs');
 var text = fs.readFileSync('./input1.txt', 'utf-8');
 
-var grid = text.split('\r\n');
+var grid = text.split('\n');
 const rowLength = grid[0].length;
 const columnLength = grid.length;
-// console.log(rowLength, columnLength);
 grid = grid.map((row) => [...row].map((ele) => parseInt(ele)));
 var result = 0;
 
@@ -17,14 +16,17 @@ grid.forEach((row, i) => {
     if (i === 0 && j === 0) return;
     const directions = ['north', 'east', 'south', 'west'];
     directions.forEach((direction) => {
-      const node = {
-        row: i,
-        column: j,
-        distance: Number.MAX_VALUE,
-        strength: point,
-        direction: direction,
-      };
-      unvisitedNodes.push(node);
+      for (let lengthIndex = 1; lengthIndex <= 3; lengthIndex++) {
+        const node = {
+          row: i,
+          column: j,
+          distance: Number.MAX_VALUE,
+          strength: point,
+          direction: direction,
+          length: lengthIndex,
+        };
+        unvisitedNodes.push(node);
+      }
     });
   });
 });
@@ -84,6 +86,7 @@ function updateNeighbors(startingNode) {
 
   neighbors.forEach((neighbor) => {
     let newDirection;
+
     if (neighbor.row === startingNode.row) {
       newDirection = neighbor.column > startingNode.column ? 'east' : 'west';
     } else {
@@ -102,8 +105,13 @@ function updateNeighbors(startingNode) {
       unvisitedNodes.push(neighbor);
       return;
     }
+
     const newLength =
       startingNode.direction === newDirection ? startingNode.length + 1 : 1;
+    if (newLength !== neighbor.length) {
+      unvisitedNodes.push(neighbor);
+      return;
+    }
 
     const updatedNode = {
       ...neighbor,
@@ -112,54 +120,8 @@ function updateNeighbors(startingNode) {
       length: newLength,
     };
 
-    if (!neighbor.length) {
-      if (newLength <= 3) {
-        unvisitedNodes.push(updatedNode);
-      } else unvisitedNodes.push(neighbor);
-    } else if (
-      updatedNode.distance < neighbor.distance &&
-      updatedNode.length < neighbor.length
-    ) {
+    if (newLength <= 3 && updatedNode.distance < neighbor.distance) {
       unvisitedNodes.push(updatedNode);
-    } else if (
-      updatedNode.distance < neighbor.distance &&
-      updatedNode.length <= 3
-    ) {
-      unvisitedNodes.push(updatedNode);
-      unvisitedNodes.push(neighbor);
-    } else if (updatedNode.length <= neighbor.length) {
-      unvisitedNodes.push(updatedNode);
-      unvisitedNodes.push(neighbor);
-    } else {
-      unvisitedNodes.push(neighbor);
-    }
-
-    // if (
-    //   neighbor.distance >= updatedNode.distance &&
-    //   updatedNode.length <= neighbor.distance &&
-    //   updatedNode.length <= 3 &&
-    //   neighbor.direction === updatedNode.direction
-    // ) {
-    //   unvisitedNodes.push(updatedNode);
-    // } else unvisitedNodes.push(neighbor);
-
-    // if (
-    //   neighbor.distance < updatedNode.distance &&
-    //   updatedNode.length < neighbor.length &&
-    //   neighbor.direction === updatedNode.direction
-    // ) {
-    //   unvisitedNodes.push(updatedNode);
-    //   unvisitedNodes.push(neighbor);
-    // }
-
-    // if (
-    //   neighbor.distance > updatedNode.distance &&
-    //   updatedNode.length > neighbor.length &&
-    //   updatedNode.length <= 3 &&
-    //   neighbor.direction === updatedNode.direction
-    // ) {
-    //   unvisitedNodes.push(updatedNode);
-    //   unvisitedNodes.push(neighbor);
-    // }
+    } else unvisitedNodes.push(neighbor);
   });
 }
