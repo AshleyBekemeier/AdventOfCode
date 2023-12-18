@@ -44,9 +44,9 @@ while (unvisitedNodes.length) {
   if (unvisitedNodes.length % 100 === 0) {
     console.log(unvisitedNodes.length);
   }
-  const sorted = unvisitedNodes.sort((a, b) => a.distance - b.distance);
-  const nextNode = sorted.at(0);
-  unvisitedNodes = unvisitedNodes.slice(1);
+  unvisitedNodes = unvisitedNodes.sort((a, b) => b.distance - a.distance);
+  const nextNode = unvisitedNodes.pop();
+  //   unvisitedNodes = unvisitedNodes.slice(1);
   updateNeighbors(nextNode);
 }
 
@@ -81,18 +81,14 @@ function updateNeighbors(startingNode) {
     const blocks =
       Math.abs(node.column - startingNode.column) +
       Math.abs(node.row - startingNode.row);
-    return blocks !== 1;
+    const duplicate = !(
+      node.row === startingNode.row &&
+      node.column === startingNode.column &&
+      node.direction === startingNode.direction &&
+      node.length === startingNode.length
+    );
+    return blocks !== 1 && duplicate;
   });
-
-  unvisitedNodes = unvisitedNodes.filter(
-    (node) =>
-      !(
-        node.row === startingNode.row &&
-        node.column === startingNode.column &&
-        node.direction === startingNode.direction &&
-        node.length === startingNode.length
-      )
-  );
 
   neighbors.forEach((neighbor) => {
     let newDirection;
