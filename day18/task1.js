@@ -11,36 +11,28 @@ const digPlanParams = digPlan.map((instruction) => {
   };
 });
 
+console.log(digPlanParams);
 let grid = [['#']];
-let currentPosition = [0, 0];
-let numberOfRows = 0;
-let numberOfColumns = 0;
-let numberOfRowsArr = [0];
-let numberOfColumnsArr = [0];
+const startPosition = [0, 0];
+let currentPosition = startPosition;
 
 const positions = digPlanParams.map((param) => {
   if (param.direction === 'U') {
     currentPosition = [currentPosition[0] - param.length, currentPosition[1]];
-    numberOfRows -= param.length;
-    numberOfRowsArr.push(-param.length);
   }
   if (param.direction === 'D') {
     currentPosition = [currentPosition[0] + param.length, currentPosition[1]];
-    numberOfRows += param.length;
-    numberOfRowsArr.push(param.length);
   }
   if (param.direction === 'L') {
     currentPosition = [currentPosition[0], currentPosition[1] - param.length];
-    numberOfColumns -= param.length;
-    numberOfColumnsArr.push(-param.length);
   }
   if (param.direction === 'R') {
     currentPosition = [currentPosition[0], currentPosition[1] + param.length];
-    numberOfColumns += param.length;
-    numberOfColumnsArr.push(param.length);
   }
   return currentPosition;
 });
+
+console.log(positions);
 
 const rowMaxArr = positions
   .map((position) => position[0])
@@ -49,9 +41,12 @@ const columnMaxArr = positions
   .map((position) => position[1])
   .sort((a, b) => b - a);
 const rowMax = Math.abs(rowMaxArr[0] - rowMaxArr[rowMaxArr.length - 1]);
+console.log(rowMaxArr[0], rowMaxArr[rowMaxArr.length - 1]);
 const columnMax = Math.abs(
   columnMaxArr[0] - columnMaxArr[columnMaxArr.length - 1]
 );
+console.log(columnMaxArr[0], columnMaxArr[columnMaxArr.length - 1]);
+
 console.log(rowMax, columnMax);
 
 const gridRow = new Array(columnMax + 1).fill('.');
@@ -60,8 +55,8 @@ grid = new Array(rowMax + 1).fill(gridRow);
 positions.forEach((position, index) => {
   const rowIndex = position[0];
   const columnIndex = position[1];
-  const previousRowIndex = positions[index - 1]?.[0] ?? 0;
-  const previousColumnIndex = positions[index - 1]?.[1] ?? 0;
+  const previousRowIndex = positions[index - 1]?.[0] ?? startPosition[0];
+  const previousColumnIndex = positions[index - 1]?.[1] ?? startPosition[1];
   console.log(previousColumnIndex, previousRowIndex);
 
   if (rowIndex === previousRowIndex) {
@@ -85,7 +80,11 @@ positions.forEach((position, index) => {
         grid[index] = [...el];
       }
     } else {
-      for (let index = previousRowIndex; index >= rowIndex; index--) {
+      for (
+        let index = previousRowIndex;
+        index >= rowIndex && index >= 0;
+        index--
+      ) {
         const el = [...grid[index]];
         el[columnIndex] = '#';
         grid[index] = [...el];
