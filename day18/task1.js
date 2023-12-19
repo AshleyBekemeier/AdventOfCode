@@ -1,5 +1,5 @@
 var fs = require('fs');
-var text = fs.readFileSync('./inputTest.txt', 'utf-8');
+var text = fs.readFileSync('./input1.txt', 'utf-8');
 
 var digPlan = text.split('\n');
 const digPlanParams = digPlan.map((instruction) => {
@@ -13,7 +13,8 @@ const digPlanParams = digPlan.map((instruction) => {
 
 console.log(digPlanParams);
 let grid = [['#']];
-const startPosition = [0, 0];
+// const startPosition = [0, 0];
+const startPosition = [239, 124];
 let currentPosition = startPosition;
 
 const positions = digPlanParams.map((param) => {
@@ -47,7 +48,7 @@ const columnMax = Math.abs(
 );
 console.log(columnMaxArr[0], columnMaxArr[columnMaxArr.length - 1]);
 
-console.log(rowMax, columnMax);
+console.log({ rowMax, columnMax });
 
 const gridRow = new Array(columnMax + 1).fill('.');
 grid = new Array(rowMax + 1).fill(gridRow);
@@ -57,7 +58,7 @@ positions.forEach((position, index) => {
   const columnIndex = position[1];
   const previousRowIndex = positions[index - 1]?.[0] ?? startPosition[0];
   const previousColumnIndex = positions[index - 1]?.[1] ?? startPosition[1];
-  console.log(previousColumnIndex, previousRowIndex);
+  // console.log(previousColumnIndex, previousRowIndex);
 
   if (rowIndex === previousRowIndex) {
     const a = [...grid[rowIndex]];
@@ -93,24 +94,78 @@ positions.forEach((position, index) => {
   }
 });
 
+// console.log({grid})
+
+// grid = [
+//   ['.', '.', '#', '.', '.', '#', '.', '.'],
+//   ['.', '.', '#', '#', '#', '#', '.', '.'],
+// ];
+
 getTopAndBottom = (rowIndex, elIndex) => {
-  const elementsAtIndex = grid.map((row) => row[elIndex]);
-  const top = elementsAtIndex.slice(0, rowIndex).indexOf('#') >= 0;
-  const bottom = elementsAtIndex.indexOf('#', rowIndex) >= 0;
+  const top = elIndex > -1 ? grid[rowIndex - 1]?.[elIndex] === '#' : false;
+  const bottom = grid[rowIndex + 1]?.[elIndex] === '#';
+  // console.log({ top, bottom });
 
   return { top, bottom };
 };
 let count = 0;
 grid.forEach((row, rowIndex) => {
+  let isInside = false;
+  let lineLength = 0;
+
   row.forEach((el, elIndex) => {
     if (el === '#') {
       count++;
+      // if (row[elIndex - 1] !== '#' && row[elIndex + 1] !== '#') {
+      //   isInside = !isInside;
+      // }
+      lineLength++;
     } else {
-      const left = row.slice(0, elIndex).indexOf('#') >= 0;
-      const right = row.indexOf('#', elIndex) >= 0;
-      const { top, bottom } = getTopAndBottom(rowIndex, elIndex);
-      if (left && right && top && bottom) count++;
+      // console.log('---------');
+      // console.log({ count, isInside, rowIndex, elIndex, lineLength });
+      if (lineLength === 1) {
+        isInside = !isInside;
+      } else {
+        if (lineLength > 1) {
+          const firstHashtag = elIndex - lineLength;
+          const lastHashtag = elIndex - 1;
+          // console.log({ firstHashtag, lastHashtag });
+          const firstTopOrBottom = getTopAndBottom(rowIndex, firstHashtag);
+          const lastTopOrBottom = getTopAndBottom(rowIndex, lastHashtag);
+
+          if (
+            (firstTopOrBottom.top && lastTopOrBottom.top) ||
+            (firstTopOrBottom.bottom && lastTopOrBottom.bottom)
+          ) {
+            console.log('DOSENT COUNT');
+            //doesn't count
+          } else {
+            isInside = !isInside;
+          }
+        }
+      }
+
+      lineLength = 0;
+      if (isInside) {
+        grid[rowIndex][elIndex] = '*';
+        count++;
+      }
+      // console.log({ count, isInside, rowIndex, elIndex, lineLength });
     }
   });
 });
+grid.forEach((row) => console.log('\x1b[36m%s\x1b[0m', row.join('')));
 console.log(count);
+console.log('\x1b[36m%s\x1b[0m', 'I am cyan');
+// ######
+// ###..#
+// ######
+// ##..##
+// #..##.
+
+// .....
+// .#####.
+// .#...#.
+// .###..#.
+// ...#..#.
+// ...####.
