@@ -39,10 +39,10 @@ function parseCondition(rawCondition) {
 let currentWorkflow = workflows.get('in');
 
 let possibleParts = {
-  x: [0, 4000],
-  m: [0, 4000],
-  a: [0, 4000],
-  s: [0, 4000],
+  x: [1, 4000],
+  m: [1, 4000],
+  a: [1, 4000],
+  s: [1, 4000],
 };
 
 // (possibleParts.x[1] - possibleParts.x[0]) * (possibleParts.m[1] - possibleParts.m[0])
@@ -53,13 +53,53 @@ function distribute(possibleParts, currentWorkflow, index) {
   const step = currentWorkflow[index];
   //   console.log({ step });
 
+  if (step.destination === 'A' || step.destination === 'R') {
+    //Continue branch with split rest
+    if (!step.isFinal && step.isGreater) {
+      if (possibleParts[step.source][0] < step.target) {
+        distribute(
+          {
+            ...possibleParts,
+            [step.source]: [
+              possibleParts[step.source][0],
+              Math.min(step.target, possibleParts[step.source][1]),
+            ],
+          },
+          currentWorkflow,
+          index + 1
+        );
+      }
+    } else if (!step.isFinal && !step.isGreater) {
+      if (possibleParts[step.source][1] > step.target) {
+        distribute(
+          {
+            ...possibleParts,
+            [step.source]: [
+              Math.max(step.target, possibleParts[step.source][0]),
+              possibleParts[step.source][1],
+            ],
+          },
+          currentWorkflow,
+          index + 1
+        );
+      }
+    }
+  }
+
   if (step.destination === 'A') {
     let value;
     if (!step.isFinal && step.isGreater) {
-      value = [step.target + 1, possibleParts[step.source][1]];
+      value = [
+        Math.max(step.target + 1, possibleParts[step.source][0]),
+        possibleParts[step.source][1],
+      ];
       //   console.log("update source value with greater than: ", value, possibleParts[step.source])
     } else if (!step.isFinal && !step.isGreater) {
-      value = [possibleParts[step.source][0], step.target - 1];
+      value = [
+        possibleParts[step.source][0],
+        Math.min(step.target - 1, possibleParts[step.source][1]),
+      ];
+
       //   console.log("update source value with lower than: ", value, possibleParts[step.source])
     }
     const newPossibleParts = step.isFinal
@@ -68,7 +108,7 @@ function distribute(possibleParts, currentWorkflow, index) {
           ...possibleParts,
           [step.source]: value,
         };
-    console.log('End reached: ', newPossibleParts, step.destination);
+    console.log('End reached: ', newPossibleParts);
     const addedPossibilities =
       (newPossibleParts.x[1] - newPossibleParts.x[0]) *
       (newPossibleParts.m[1] - newPossibleParts.m[0]) *
@@ -81,6 +121,7 @@ function distribute(possibleParts, currentWorkflow, index) {
   }
 
   if (step.isFinal) {
+    // console.log(step);
     distribute(possibleParts, workflows.get(step.destination), 0);
     return;
   }
@@ -97,6 +138,7 @@ function distribute(possibleParts, currentWorkflow, index) {
   if (
     step.isGreater ? partSourceValues[0] > target : partSourceValues[1] < target
   ) {
+    console.log('test');
     distribute(possibleParts, workflows.get(step.destination), 0);
   } else if (partSourceValues[0] < target < partSourceValues[1]) {
     if (isGreater) {
@@ -123,32 +165,13 @@ function distribute(possibleParts, currentWorkflow, index) {
       );
     }
   } else {
+    console.log('test');
     distribute(possibleParts, currentWorkflow, index + 1);
   }
 }
 
 var result = 0;
 
-function checkIfSorted(destination, possibleParts) {
-  if (destination === 'A') {
-    console.log('End reached: ', possibleParts, destination);
-    const addedPossibilities =
-      (possibleParts.x[1] - possibleParts.x[0]) *
-      (possibleParts.m[1] - possibleParts.m[0]) *
-      (possibleParts.a[1] - possibleParts.a[0]) *
-      (possibleParts.s[1] - possibleParts.s[0]);
-    result += addedPossibilities;
-    return true;
-  } else if (destination === 'R') {
-    return true;
-  } else return false;
-}
-
 distribute(possibleParts, currentWorkflow, 0);
-
-// acceptedParts.forEach((part) => {
-//   const total = part.x + part.m + part.a + part.s;
-//   result += total;
-// });
 
 console.log(result);
