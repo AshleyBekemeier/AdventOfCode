@@ -1,5 +1,5 @@
 var fs = require('fs');
-var text = fs.readFileSync('./inputTest.txt', 'utf-8');
+var text = fs.readFileSync('./input1.txt', 'utf-8');
 
 var textArray = text.split('\n\n');
 var workflowStrings = textArray[0].split('\n');
@@ -110,10 +110,10 @@ function distribute(possibleParts, currentWorkflow, index) {
         };
     console.log('End reached: ', newPossibleParts);
     const addedPossibilities =
-      (newPossibleParts.x[1] - newPossibleParts.x[0]) *
-      (newPossibleParts.m[1] - newPossibleParts.m[0]) *
-      (newPossibleParts.a[1] - newPossibleParts.a[0]) *
-      (newPossibleParts.s[1] - newPossibleParts.s[0]);
+      (newPossibleParts.x[1] - newPossibleParts.x[0] + 1) *
+      (newPossibleParts.m[1] - newPossibleParts.m[0] + 1) *
+      (newPossibleParts.a[1] - newPossibleParts.a[0] + 1) *
+      (newPossibleParts.s[1] - newPossibleParts.s[0] + 1);
     result += addedPossibilities;
     return;
   } else if (step.destination === 'R') {
